@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\User\\SocialApp\\SocialApp.API\\SocialApp.API.csproj": {}
+    "D:\\Projects\\Actual Work\\SocialApp\\SocialApp.Api\\SocialApp.API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\User\\SocialApp\\SocialApp.API\\SocialApp.API.csproj": {
+    "D:\\Projects\\Actual Work\\SocialApp\\SocialApp.Api\\SocialApp.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\SocialApp\\SocialApp.API\\SocialApp.API.csproj",
+        "projectUniqueName": "D:\\Projects\\Actual Work\\SocialApp\\SocialApp.Api\\SocialApp.API.csproj",
         "projectName": "SocialApp.API",
-        "projectPath": "C:\\Users\\User\\SocialApp\\SocialApp.API\\SocialApp.API.csproj",
+        "projectPath": "D:\\Projects\\Actual Work\\SocialApp\\SocialApp.Api\\SocialApp.API.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\SocialApp\\SocialApp.API\\obj\\",
+        "outputPath": "D:\\Projects\\Actual Work\\SocialApp\\SocialApp.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -42,6 +42,18 @@
       "frameworks": {
         "netcoreapp3.0": {
           "dependencies": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[3.0.0-preview8.19405.7, )"
+            },
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[3.0.0-preview8.19405.7, )"
+            },
+            "Microsoft.AspNetCore.Identity.UI": {
+              "target": "Package",
+              "version": "[3.0.0-preview8.19405.7, )"
+            },
             "Microsoft.EntityFrameworkCore.Design": {
               "target": "Package",
               "version": "[3.0.0-preview8.19405.11, )"
@@ -68,9 +80,17 @@
               "target": "Package",
               "version": "[3.0.0-preview8.19405.4, )"
             },
+            "Microsoft.IdentityModel.Tokens": {
+              "target": "Package",
+              "version": "[5.5.0, )"
+            },
             "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
               "target": "Package",
               "version": "[3.0.0-preview8-19413-06, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[5.5.0, )"
             }
           },
           "imports": [

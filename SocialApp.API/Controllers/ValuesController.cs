@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using SocialApp.API.Data;
 
 namespace SocialApp.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
@@ -19,6 +21,7 @@ namespace SocialApp.API.Controllers
             _dataContext = dataContext;
 
         }
+        
         // GET: api/Values
         [HttpGet]
         public async Task<IActionResult> GetValues()
@@ -27,7 +30,7 @@ namespace SocialApp.API.Controllers
             return Ok(values);
         }
 
-        // GET: api/Values/5
+        [AllowAnonymous]
         [HttpGet("{id}", Name = "Get")]
         public async Task<IActionResult> GetValues(int id)
         {
