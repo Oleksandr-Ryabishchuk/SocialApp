@@ -10,7 +10,7 @@
       "NETCOREAPP",
       "NETCOREAPP3_0"
     ],
-    "languageVersion": "",
+    "languageVersion": "preview",
     "platform": "",
     "allowUnsafe": false,
     "warningsAsErrors": false,
