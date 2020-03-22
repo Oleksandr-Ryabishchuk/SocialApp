@@ -16,6 +16,9 @@ using System.Net;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using SocialApp.API.Helpers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using AutoMapper;
 
 namespace SocialApp.API
 {
@@ -34,9 +37,20 @@ namespace SocialApp.API
             services.AddDbContext<DataContext>(x => 
             x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
             services.AddControllers();
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(options =>
+            {
+                var resolver = new JsonSerializerSettings().ContractResolver;
+                if (resolver != null)
+                    (resolver as DefaultContractResolver).NamingStrategy = null;
+                var settings = new JsonSerializerSettings().ReferenceLoopHandling =
+                Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                //options.JsonSerializerOptions.IgnoreNullValues = true;
+                
+            }); 
             services.AddCors();
+            services.AddAutoMapper(typeof(SocialRepository).Assembly);
             services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<ISocialRepository, SocialRepository>();
 
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
