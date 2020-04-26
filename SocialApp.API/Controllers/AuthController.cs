@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using AutoMapper;
 
 namespace SocialApp.API.Controllers
 {
@@ -19,8 +20,10 @@ namespace SocialApp.API.Controllers
     {
         private readonly IAuthRepository _authRepository;
         private readonly IConfiguration _configuration;
-        public AuthController(IAuthRepository authRepository, IConfiguration configuration)
+        private readonly IMapper _mapper;
+        public AuthController(IAuthRepository authRepository, IConfiguration configuration, IMapper mapper)
         {
+            _mapper = mapper;
             _configuration = configuration;
             _authRepository = authRepository;
 
@@ -57,7 +60,7 @@ namespace SocialApp.API.Controllers
         public async Task<IActionResult> Login(UserForLoginDto userForLoginDto)
         {
             // throw new Exception("Computer doesn't run command");
-            
+
             var userFromRepository = await _authRepository.Login(userForLoginDto.UserName.ToLower(),
              userForLoginDto.Password);
 
@@ -74,9 +77,9 @@ namespace SocialApp.API.Controllers
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
-            
+
             var signInCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-           
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
@@ -88,11 +91,15 @@ namespace SocialApp.API.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return Ok(new {
-                token = tokenHandler.WriteToken(token)
+            var user = _mapper.Map<UserForListDto>(userFromRepository);
+
+            return Ok(new
+            {
+                token = tokenHandler.WriteToken(token),
+                user
             });
 
-            
+
         }
     }
 }
