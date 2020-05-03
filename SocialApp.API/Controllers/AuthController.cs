@@ -39,22 +39,20 @@ namespace SocialApp.API.Controllers
             }
 
             userForRegisterDto.UserName = userForRegisterDto.UserName.ToLower();
-            // make sure the names will save in lower case
+            // make sure the names will be saving in lower case
 
             if (await _authRepository.UserExists(userForRegisterDto.UserName))
             {
                 return BadRequest("Username already registered");
             }
 
-            var userToCreate = new User
-            {
-                UserName = userForRegisterDto.UserName
-            };
+            var userToCreate = _mapper.Map<User>(userForRegisterDto);
 
             var createdUser = await _authRepository
             .Register(userToCreate, userForRegisterDto.Password);
 
-            return StatusCode(201);
+            var userToReturn = _mapper.Map<UserForDetailedDto>(createdUser);
+            return CreatedAtRoute("GetUser", new {controller = "Users", id = createdUser.UserId}, userToReturn);
         }
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserForLoginDto userForLoginDto)

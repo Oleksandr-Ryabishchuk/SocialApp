@@ -29,6 +29,8 @@ namespace SocialApp.API.Helpers
             CreateMap<Photo, PhotoForReturnDto>();
 
             CreateMap<PhotoForCreatingDto, Photo>();
+
+            CreateMap<UserForRegisterDto, User>();
         }
     }
 }
