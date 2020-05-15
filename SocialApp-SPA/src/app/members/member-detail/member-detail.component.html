@@ -1,6 +1,6 @@
 <div class="container mt-4">
   <div class="row">
-    <h1>{{user.userName}}</h1>
+    <h1>{{user.userName | titlecase}}</h1>
   </div>
   <div class="row">
     <div class="col-sm-4">
@@ -37,13 +37,13 @@
           <tabset class="member-tabset">
             <tab heading="About {{user.knownAs}}">
             <h4>Description</h4>
-            <p>{{user.introduction || 'Have not posted yet'}}</p>
+            <p>{{user.introduction || 'Has not been posted yet'}}</p>
             <h4>Looking For</h4>
-            <p>{{user.lookingFor || 'Have not posted yet'}}</p>
+            <p>{{user.lookingFor || 'Has not been posted yet'}}</p>
           </tab>
           <tab heading="Interests">
             <h4>Interests</h4>
-            <p>{{user.interests || 'Have not posted yet'}}</p>
+            <p>{{user.interests || 'Has not been posted yet'}}</p>
           </tab>
           <tab heading="Photos">
             <ngx-gallery [options]="galleryOptions" [images]="galleryImages"></ngx-gallery>
