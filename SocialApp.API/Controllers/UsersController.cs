@@ -109,7 +109,7 @@ namespace SocialApp.API.Controllers
             {
                 return Ok();
             }
-
+            GC.Collect();
             return BadRequest("Like is failed");
         }
     }
