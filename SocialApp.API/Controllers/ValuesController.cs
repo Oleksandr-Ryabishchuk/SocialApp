@@ -10,7 +10,6 @@ using SocialApp.API.Data;
 
 namespace SocialApp.API.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase

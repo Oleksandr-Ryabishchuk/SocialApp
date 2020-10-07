@@ -9,8 +9,11 @@
         <a class="nav-link" [routerLink]="['/lists']">Lists</a>
       </li>
       <li class="nav-item" routerLinkActive="active">
-        <a class="nav-link " [routerLink]="['/messages']">Messages</a>
-      </li>        
+        <a class="nav-link" [routerLink]="['/messages']">Messages</a>
+      </li>
+      <li class="nav-item" routerLinkActive="active">
+        <a class="nav-link" [routerLink]="['/admin']">Admin</a>
+      </li>         
     </ul>
 
     <div *ngIf="loggedIn()" class="dropdown" dropdown>

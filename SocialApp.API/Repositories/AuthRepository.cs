@@ -1,16 +1,22 @@
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SocialApp.API.Data;
 using SocialApp.API.InterfaceRepositories;
 using SocialApp.API.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace SocialApp.API.Repositories
 {
     public class AuthRepository : IAuthRepository
     {
         private readonly DataContext _dataContext;
+         private readonly IConfiguration _configuration;
         public AuthRepository(DataContext dataContext)
         {
             _dataContext = dataContext;
@@ -22,12 +28,13 @@ namespace SocialApp.API.Repositories
            if(user == null){
                return null;               
            }
-           if(!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt)){
-               return null;
-           }
+          // if(!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt)){
+          //     return null;
+          // }
            return user;
         }
 
+       
         private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
         {
            
@@ -51,8 +58,8 @@ namespace SocialApp.API.Repositories
            byte [] passwordHash, passwordSalt; 
            CreatePasswordHash(password, out passwordHash, out passwordSalt);
 
-           user.PasswordHash = passwordHash;
-           user.PasswordSalt = passwordSalt;
+          // user.PasswordHash = passwordHash;
+          // user.PasswordSalt = passwordSalt;
            
            await _dataContext.Users.AddAsync(user);
            await _dataContext.SaveChangesAsync();

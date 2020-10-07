@@ -11,23 +11,30 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
 
 namespace SocialApp.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthRepository _authRepository;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
-        public AuthController(IAuthRepository authRepository, IConfiguration configuration, IMapper mapper)
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
+
+        public AuthController(IConfiguration configuration, IMapper mapper,
+        UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _mapper = mapper;
+            _userManager = userManager;
+            _signInManager = signInManager;
             _configuration = configuration;
-            _authRepository = authRepository;
-
         }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto)
         {
@@ -37,41 +44,58 @@ namespace SocialApp.API.Controllers
             {
                 return BadRequest(ModelState);
             }
-
-            userForRegisterDto.UserName = userForRegisterDto.UserName.ToLower();
-            // make sure the names will be saving in lower case
-
-            if (await _authRepository.UserExists(userForRegisterDto.UserName))
-            {
-                return BadRequest("Username already registered");
-            }
-
+           
             var userToCreate = _mapper.Map<User>(userForRegisterDto);
 
-            var createdUser = await _authRepository
-            .Register(userToCreate, userForRegisterDto.Password);
+            var result = await _userManager.CreateAsync(userToCreate, userForRegisterDto.Password);
 
-            var userToReturn = _mapper.Map<UserForDetailedDto>(createdUser);
-            return CreatedAtRoute("GetUser", new {controller = "Users", id = createdUser.UserId}, userToReturn);
+            if(result.Succeeded)
+            {
+                var userToReturn = _mapper.Map<UserForDetailedDto>(userToCreate);
+                return CreatedAtRoute("GetUser", 
+                new {controller = "Users", id = userToCreate.Id}, userToReturn);
+            }
+
+            return BadRequest(result.Errors);
         }
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserForLoginDto userForLoginDto)
         {
             // throw new Exception("Computer doesn't run command");
 
-            var userFromRepository = await _authRepository.Login(userForLoginDto.UserName.ToLower(),
-             userForLoginDto.Password);
+            var user = await _userManager.FindByNameAsync(userForLoginDto.UserName);
 
-            if (userFromRepository == null)
+            var result = await _signInManager.CheckPasswordSignInAsync(user, 
+            userForLoginDto.Password, false);
+
+            if (result.Succeeded)
             {
-                return Unauthorized();
+               var userToReturn = _mapper.Map<UserForListDto>(user);
+
+                return Ok(new
+                {
+                    token = GenerateJwtToken(user).Result,
+                    user = userToReturn
+                });
             }
 
-            var claims = new[]
-            {
-                 new Claim(ClaimTypes.NameIdentifier, userFromRepository.UserId.ToString()),
-                 new Claim(ClaimTypes.Name, userFromRepository.UserName)
+           return Unauthorized();            
+        }
+
+        private async Task<string> GenerateJwtToken(User user) 
+        {               
+             var claims = new List<Claim>            
+             {
+                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                 new Claim(ClaimTypes.Name, user.UserName)
              };
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
@@ -89,15 +113,7 @@ namespace SocialApp.API.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            var user = _mapper.Map<UserForListDto>(userFromRepository);
-
-            return Ok(new
-            {
-                token = tokenHandler.WriteToken(token),
-                user
-            });
-
-
+            return tokenHandler.WriteToken(token);
         }
     }
 }

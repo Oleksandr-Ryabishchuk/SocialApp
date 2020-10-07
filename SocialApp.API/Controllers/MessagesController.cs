@@ -14,7 +14,6 @@ using SocialApp.API.Models;
 namespace SocialApp.API.Controllers
 {
     [ServiceFilter(typeof(LogUserActivity))]
-    [Authorize]
     [Route("api/users/{userId}/[controller]")]
     [ApiController]
     public class MessagesController : ControllerBase
@@ -87,7 +86,7 @@ namespace SocialApp.API.Controllers
         {
             var sender = await _repo.GetUser(userId);
 
-            if (sender.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            if (sender.Id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
             {
                 return Unauthorized();
             }

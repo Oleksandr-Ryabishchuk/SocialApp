@@ -19,6 +19,10 @@ using SocialApp.API.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using SocialApp.API.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace SocialApp.API
 {
@@ -35,7 +39,7 @@ namespace SocialApp.API
         {
             services.AddDbContext<DataContext>(x => {
                 x.UseLazyLoadingProxies();
-                x.UseMySql(Configuration.GetConnectionString("DefaultConnection"));
+                x.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
             });
             
 
@@ -55,26 +59,18 @@ namespace SocialApp.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            IdentityBuilder builder = services.AddIdentityCore<User>(opt => {
+                opt.Password.RequireDigit = false;
+                opt.Password.RequiredLength = 4;
+                opt.Password.RequireNonAlphanumeric = false;
+                opt.Password.RequireUppercase = false;
+            });
             
-            services.AddControllers();
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(options =>
-            {
-                var resolver = new JsonSerializerSettings().ContractResolver;
-                if (resolver != null)
-                    (resolver as DefaultContractResolver).NamingStrategy = null;
-                var settings = new JsonSerializerSettings().ReferenceLoopHandling =
-                Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-                //options.JsonSerializerOptions.IgnoreNullValues = true;
-                
-            }); 
-            services.AddCors();
-
-            services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
-            
-            services.AddAutoMapper(typeof(SocialRepository).Assembly);
-            services.AddScoped<IAuthRepository, AuthRepository>();
-            services.AddScoped<ISocialRepository, SocialRepository>();
-
+            builder = new IdentityBuilder(builder.UserType, typeof(Role), builder.Services);
+            builder.AddEntityFrameworkStores<DataContext>();
+            builder.AddRoleValidator<RoleValidator<Role>>();
+            builder.AddRoleManager<RoleManager<Role>>();
+            builder.AddSignInManager<SignInManager<User>>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options => {
@@ -87,6 +83,36 @@ namespace SocialApp.API
                     ValidateAudience = false
                 };
                 });
+
+            services.AddAuthorization(options => 
+            {
+                options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("ModeratePhotoRole", policy => policy.RequireRole("Admin", "Moderator"));
+                options.AddPolicy("VipOnly", policy => policy.RequireRole("VIP"));
+            });
+
+            services.AddControllers();
+            services.AddMvc(options => {
+                var policy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
+                options.Filters.Add(new AuthorizeFilter(policy));
+            })
+            .AddNewtonsoftJson(opt => {
+                opt.SerializerSettings.ReferenceLoopHandling = 
+                Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            })
+            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0); 
+            services.AddCors();
+
+            services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
+            
+            services.AddAutoMapper(typeof(SocialRepository).Assembly);
+            services.AddScoped<ISocialRepository, SocialRepository>();
+
+
+          
 
                 services.AddScoped<LogUserActivity>();
         }
@@ -128,7 +154,7 @@ namespace SocialApp.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapFallbackToController("Index", "Fallback");
+                //endpoints.MapFallbackToController("Index", "Fallback");
             });
 
             

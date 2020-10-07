@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
 using SocialApp.API.Models;
 using System;
 using System.Collections.Generic;
@@ -9,22 +10,44 @@ namespace SocialApp.API.Data
 {
     public class Seed
     {
-        public static void SeedUsers(DataContext context)
+        public static void SeedUsers(UserManager<User> manager, RoleManager<Role> roleManager)
         {
-            if (!context.Users.Any())
+            if (!manager.Users.Any())
             {
                 var userData = System.IO.File.ReadAllText("Data/UserSeedData.json");
                 var users = JsonConvert.DeserializeObject<List<User>>(userData);
+
+                var roles = new List<Role> 
+                {
+                    new Role{Name = "Member"},
+                    new Role{Name = "Admin"},
+                    new Role{Name = "Moderator"},
+                    new Role{Name = "VIP"}
+                };
+
+                foreach(var role in roles) 
+                {
+                    roleManager.CreateAsync(role).Wait();
+                } 
+
                 foreach (var user in users)
                 {
-                    byte[] passwordHash, passwordSalt;
-                    CreatePasswordHash("password", out passwordHash, out passwordSalt);
-                    user.PasswordHash = passwordHash;
-                    user.PasswordSalt = passwordSalt;
-                    user.UserName = user.UserName.ToLower();
-                    context.Users.Add(user);
+                    manager.CreateAsync(user, "password").Wait();
+                    manager.AddToRoleAsync(user, "Member");
                 }
-                context.SaveChanges();
+
+                var adminUser = new User {
+                    UserName = "Admin"
+                };
+
+                var result = manager.CreateAsync(adminUser, "password").Result;
+
+                if(result.Succeeded) 
+                {
+                    var admin = manager.FindByNameAsync("Admin").Result;
+                    manager.AddToRolesAsync(admin, new [] {"Admin", "Moderator"});
+                }
+               
             }
         }
         private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)

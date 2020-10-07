@@ -48,7 +48,7 @@ namespace SocialApp.API.Repositories
 
         public async Task<User> GetUser(int id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             return user;
         }
 
@@ -57,18 +57,18 @@ namespace SocialApp.API.Repositories
             var users =  _context.Users
             .OrderByDescending(u => u.LastActive).AsQueryable();
 
-            users = users.Where(u => u.UserId != userParams.UserId && u.Gender == userParams.Gender);
+            users = users.Where(u => u.Id != userParams.UserId && u.Gender == userParams.Gender);
 
             if (userParams.Likers)
             {
                 var userLikers = await GetUserLikes(userParams.UserId, userParams.Likers);
-                users = users.Where(u => userLikers.Contains(u.UserId));
+                users = users.Where(u => userLikers.Contains(u.Id));
             }
 
             if (userParams.Likees)
             {
                 var userLikees = await GetUserLikes(userParams.UserId, userParams.Likers);
-                users = users.Where(u => userLikees.Contains(u.UserId));
+                users = users.Where(u => userLikees.Contains(u.Id));
             }
 
             if(userParams.MinAge != 18 || userParams.MaxAge != 99) 
@@ -98,7 +98,7 @@ namespace SocialApp.API.Repositories
         private async Task<IEnumerable<int>> GetUserLikes(int id, bool likers)
         {
             var user = await _context.Users
-                      .FirstOrDefaultAsync(u => u.UserId == id);
+                      .FirstOrDefaultAsync(u => u.Id == id);
 
             if (likers)
             {
